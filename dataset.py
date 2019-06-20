@@ -16,20 +16,21 @@ from torch.utils.data import Dataset
 from tqdm import tqdm
 from PIL import Image
 
-SCORE_CLASSES = ('-10', '-6', '-5',
+SCORE_CLASSES = ('-10', '-9', '-8', '-7','-6', '-5',
                  '-4', '-3', '-2', '-1', '0', '1', '2',
                  '3', '4', '5', '6')
 
 NUM_SCORES  = len(SCORE_CLASSES)
 
-parser = argparse.ArgumentParser(description='Train a SegNet model')
+# parser = argparse.ArgumentParser(description='Train a SegNet model')
 
-parser.add_argument('--VOC',default=0, type= int,help='whether to load the VOC dataset or not')
+# parser.add_argument('--VOC',default=0, type= int,help='whether to load the VOC dataset or not')
 
-args = parser.parse_args()
+# args = parser.parse_args()
 
 
-VOC = args.VOC                 # whether to load VOC or Score
+# VOC = args.VOC                 # whether to load VOC or Score
+VOC=1
 class ScoreDataset(Dataset):
     """The score dataset created by us"""
     def __init__(self, list_file, img_dir, mask_dir):
@@ -39,7 +40,7 @@ class ScoreDataset(Dataset):
         self.mask_root_dir  = mask_dir
 
         # self.counts = self.__compute_class_probability()
-        self.counts =    {0: 100946816,  4: 213530, 5: 2476976, 6: 32769, 7: 193461,
+        self.counts =    {0: 100946816, 1:1, 2:1, 3:1, 4: 213530, 5: 2476976, 6: 32769, 7: 193461,
                          8: 359074, 9: 71519, 10: 46142, 11: 31482, 12: 15810, 13: 4947, 14: 3202,
                           15: 11343, 16: 129}
         
@@ -83,7 +84,7 @@ class ScoreDataset(Dataset):
     def load_image(self, path=None):
         # raw_image = Image.open(path)
         raw_image = np.load(path)
-        raw_image = np.transpose(raw_image, (2,1,0))
+        raw_image = np.transpose(raw_image, (2,0,1))
         imx_t = np.array(raw_image, dtype=np.float32)/45.0
         return imx_t
 
@@ -171,7 +172,7 @@ class PascalVOCDataset(Dataset):
 
 
 if __name__ == "__main__":
-    if VOC: 
+    if VOC:
         data_root = os.path.join("VOCdevkit", "VOC2007")
         list_file_path = os.path.join(data_root, "ImageSets", "Segmentation", "train.txt")
         img_dir = os.path.join(data_root, "JPEGImages")

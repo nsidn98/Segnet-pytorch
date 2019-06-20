@@ -3,7 +3,7 @@ Train a SegNet model
 
 
 Usage:
-python train.py --data_root Data --train_path train.txt --img_dir Train --mask_dir Train_annot --save_dir Output 
+python train.py --data_root Data --train_path train.txt --img_dir Train --mask_dir Train_annot --save_dir Output
                 --checkpoint model_best.pth \
                 --gpu 1
 
@@ -25,11 +25,13 @@ pytorch-segnet
 
 from __future__ import print_function
 import argparse
+import numpy as np
 from dataset import PascalVOCDataset, NUM_CLASSES
 from dataset import ScoreDataset, NUM_SCORES
 from model import SegNet
 import os
 import time
+import matplotlib.pyplot as plt
 import torch
 from torch.utils.data import DataLoader
 
@@ -62,8 +64,7 @@ NUM_EPOCHS = 6000
 
 LEARNING_RATE = 1e-6
 MOMENTUM = 0.9
-BATCH_SIZE = 1
-
+BATCH_SIZE = 10
 
 def train():
     print('TRAINING')
@@ -75,20 +76,21 @@ def train():
     for epoch in range(NUM_EPOCHS):
         loss_f = 0
         t_start = time.time()
-        print(epoch)
         i=0
         for batch in train_dataloader:
-            print(i)
             i+=1
             input_tensor = torch.autograd.Variable(batch['image'])
             target_tensor = torch.autograd.Variable(batch['mask'])
-
+            img = np.transpose(target_tensor.numpy(),(1,2,0))
+            # plt.imshow(tar)
+            if args.custom:
+                target_tensor = target_tensor + 10
+            
             if CUDA:
                 input_tensor = input_tensor.cuda(GPU_ID)
                 target_tensor = target_tensor.cuda(GPU_ID)
 
             predicted_tensor, softmaxed_tensor = model(input_tensor)
-
 
             optimizer.zero_grad()
             loss = criterion(softmaxed_tensor, target_tensor)
@@ -148,7 +150,7 @@ if __name__ == "__main__":
                        output_channels=NUM_OUTPUT_CHANNELS)
         print('STATE_DICT')
         class_weights = 1.0/train_dataset.get_class_probability()
-        print(train_dataset.get_class_probability())
+        print('class_weights',len(class_weights))
         criterion = torch.nn.CrossEntropyLoss(weight=class_weights)
 
 
