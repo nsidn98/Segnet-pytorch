@@ -3,9 +3,24 @@ Train a SegNet model
 
 
 Usage:
-python train.py --data_root VOCdevkit\VOC2007\ --train_path ImageSets/Segmentation/train.txt --img_dir JPEGImages --mask_dir SegmentationClass --save_dir Output 
+python train.py --data_root Data --train_path train.txt --img_dir Train --mask_dir Train_annot --save_dir Output 
                 --checkpoint model_best.pth \
                 --gpu 1
+
+Directory structure:
+pytorch-segnet
+            |_src
+                |_ _test.py
+                |_ dataset.py
+                |_ inference.py
+                |_ model.py
+                |_ train.py
+                |_Data
+                    |_ Train
+                    |_ Train_annot
+                    |_ annotations.txt
+                    |_ train.txt
+                |_ VOCDevkit
 """
 
 from __future__ import print_function
@@ -21,12 +36,12 @@ from torch.utils.data import DataLoader
 # Arguments
 parser = argparse.ArgumentParser(description='Train a SegNet model')
 
-parser.add_argument('--data_root', required=True)
-parser.add_argument('--train_path', required=True)
-parser.add_argument('--img_dir', required=True)
-parser.add_argument('--mask_dir', required=True)
-parser.add_argument('--save_dir', required=True)
-parser.add_argument('--custom', default=0, type=int)
+parser.add_argument('--data_root', default="Data")
+parser.add_argument('--train_path',default="train.txt")
+parser.add_argument('--mask_dir', default="Train_annot")
+parser.add_argument('--img_dir', default="Train")
+parser.add_argument('--save_dir', default="Output")
+parser.add_argument('--custom', default=1, type=int)
 parser.add_argument('--checkpoint')
 parser.add_argument('--gpu', type=int)
 
@@ -108,7 +123,7 @@ if __name__ == "__main__":
     print('DATASET')
     if args.custom:
         train_dataset = ScoreDataset(list_file=train_path,
-                                     img_di=img_dir,
+                                     img_dir=img_dir,
                                      mask_dir=mask_dir)
     else:
         train_dataset = PascalVOCDataset(list_file=train_path,
