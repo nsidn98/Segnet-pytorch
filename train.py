@@ -32,6 +32,7 @@ from model import SegNet
 import os
 import time
 import matplotlib.pyplot as plt
+from tqdm import tqdm
 import torch
 from torch.utils.data import DataLoader
 
@@ -62,7 +63,7 @@ else:
 
 NUM_EPOCHS = 6000
 
-LEARNING_RATE = 1e-6
+LEARNING_RATE = 5e-7
 MOMENTUM = 0.9
 BATCH_SIZE = 10
 
@@ -73,12 +74,13 @@ def train():
 
     model.train()
 
-    for epoch in range(NUM_EPOCHS):
+    for epoch in tqdm(range(NUM_EPOCHS)):
         loss_f = 0
         t_start = time.time()
         i=0
+#        print(len(train_dataloader))
         for batch in train_dataloader:
-            i+=1
+#            print(i);i+=1
             input_tensor = torch.autograd.Variable(batch['image'])
             target_tensor = torch.autograd.Variable(batch['mask'])
             img = np.transpose(target_tensor.numpy(),(1,2,0))
@@ -119,6 +121,7 @@ if __name__ == "__main__":
     mask_dir = os.path.join(data_root, args.mask_dir)
 
     CUDA = args.gpu is not None
+    print("CUDA",CUDA)
     GPU_ID = args.gpu
     print('GPU',GPU_ID)
 
@@ -148,6 +151,7 @@ if __name__ == "__main__":
         print('MODEL')
         model = SegNet(input_channels=NUM_INPUT_CHANNELS,
                        output_channels=NUM_OUTPUT_CHANNELS)
+        model.init_vgg_weigts()
         print('STATE_DICT')
         class_weights = 1.0/train_dataset.get_class_probability()
         print('class_weights',len(class_weights))
@@ -155,6 +159,7 @@ if __name__ == "__main__":
 
 
     if args.checkpoint:
+        print('Loading Checkpoint')
         if GPU_ID is None:
             model.load_state_dict(torch.load(args.checkpoint,map_location='cpu'))
         else:
